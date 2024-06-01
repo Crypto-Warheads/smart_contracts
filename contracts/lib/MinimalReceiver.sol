@@ -1,9 +1,10 @@
-// SPDX-License-Identifier: UNLICENSED
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
 import "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol";
 import "@openzeppelin/contracts/token/ERC721/utils/ERC721Holder.sol";
 
+/// @custom:security-contact contact@yashgoyal.dev
 contract MinimalReceiver is ERC721Holder, ERC1155Holder {
     /**
      * @dev Allows all Ether transfers

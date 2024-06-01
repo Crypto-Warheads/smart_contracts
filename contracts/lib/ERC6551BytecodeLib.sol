@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
+/// @custom:security-contact contact@yashgoyal.dev
 library ERC6551BytecodeLib {
     function getCreationCode(
         address implementation_,

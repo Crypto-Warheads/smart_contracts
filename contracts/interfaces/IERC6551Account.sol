@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
+/// @custom:security-contact contact@yashgoyal.dev
 interface IERC6551AccountProxy {
     function implementation() external view returns (address);
 }
