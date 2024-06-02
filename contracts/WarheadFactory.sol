@@ -29,9 +29,9 @@ contract WarheadFactory is ERC2771Context, IERC721Receiver {
     uint256 totalWarheads = 0;
     WarheadNft public warheadNft;
 
-    event WarheadCreated(uint256 warheadId, address dropper);
-    event WarheadCreatedWithReceiver(uint256 warheadId, address dropper, address targetReceiver);
-    event WarheadDropped(uint256 warheadId, Coord target, uint256 impactTime);
+    event WarheadCreated(uint256 warheadId, address dropper, address warheadAddress);
+    event WarheadCreatedWithReceiver(uint256 warheadId, address dropper, address warheadAddress, address targetReceiver);
+    event WarheadDropped(uint256 warheadId, int256 targetLat, int256 targetLong, uint256 impactTime);
     event WarheadClaimed(uint256 warheadId, address claimer, uint256 claimedAt);
 
     modifier checkWarhead(uint256 warheadId) {
@@ -74,10 +74,12 @@ contract WarheadFactory is ERC2771Context, IERC721Receiver {
             targetReceiver: targetReceiver
         });
 
+        address warheadAddress = warheadNft.getWarheadAddress(warheadId);
+
         if (targetReceiver != address(0)) {
-            emit WarheadCreatedWithReceiver(warheadId, _msgSender(), targetReceiver);
+            emit WarheadCreatedWithReceiver(warheadId, _msgSender(), warheadAddress, targetReceiver);
         } else {
-            emit WarheadCreated(warheadId, _msgSender());
+            emit WarheadCreated(warheadId, _msgSender(), warheadAddress);
         }
     }
 
@@ -92,7 +94,7 @@ contract WarheadFactory is ERC2771Context, IERC721Receiver {
         s_warhead.target = coord;
         s_warhead.impactTime = impactTime;
 
-        emit WarheadDropped(warheadId, coord, impactTime);
+        emit WarheadDropped(warheadId, coord.lat, coord.long, impactTime);
     }
 
     function claim(Coord calldata location, uint256 warheadId) external checkWarhead(warheadId) {
