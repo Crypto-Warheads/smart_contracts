@@ -12,13 +12,13 @@ const config: HardhatUserConfig = {
     sepolia: {
       url: "https://eth-sepolia.g.alchemy.com/v2/PwLFgwHhfPYXl7Zbr5-6lTRciwNkGVpl",
       accounts: [`0x${process.env.PRIVATE_KEY}`]
-    }
+    },
   },
   etherscan: {
     apiKey: {
       sepolia: process.env.ETHERSCAN_API_KEY || ""
     }
-  }
+  },
 };
 
 export default config;
