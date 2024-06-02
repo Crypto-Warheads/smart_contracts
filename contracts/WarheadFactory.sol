@@ -3,6 +3,7 @@ pragma solidity ^0.8.24;
 
 import "@openzeppelin/contracts/metatx/ERC2771Context.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
 import "./WarheadNft.sol";
 
@@ -21,6 +22,7 @@ contract WarheadFactory is ERC2771Context, IERC721Receiver {
         address claimer;
         bool isClaimed;
         uint256 claimedAt;
+        address targetReceiver;
     }
 
     mapping(uint256 => WarheadObject) internal _warheads;
@@ -28,6 +30,7 @@ contract WarheadFactory is ERC2771Context, IERC721Receiver {
     WarheadNft public warheadNft;
 
     event WarheadCreated(uint256 warheadId, address dropper);
+    event WarheadCreatedWithReceiver(uint256 warheadId, address dropper, address targetReceiver);
     event WarheadDropped(uint256 warheadId, Coord target, uint256 impactTime);
     event WarheadClaimed(uint256 warheadId, address claimer, uint256 claimedAt);
 
@@ -38,16 +41,24 @@ contract WarheadFactory is ERC2771Context, IERC721Receiver {
         require(_warheads[warheadId].impactTime < block.timestamp, "Warhead has not landed yet");
         _;
     }
+
+    modifier onlyOwner() {
+        require(msg.sender == owner, "Only owner can call this function");
+        _;
+    }
+
+    address public owner;
     
     constructor(address _trustedForwarder, WarheadNft _warheadNft) ERC2771Context(_trustedForwarder) {
         warheadNft = _warheadNft;
+        owner = msg.sender;
     }
     
     function versionRecipient() external pure returns (string memory) {
         return "1";
     }
 
-    function createWarhead() external {
+    function createWarhead(address targetReceiver) external {
         uint256 warheadId = totalWarheads++;
 
         warheadNft.assembleWarhead(address(this), warheadId);
@@ -59,10 +70,15 @@ contract WarheadFactory is ERC2771Context, IERC721Receiver {
             impactTime: 0,
             claimer: address(0),
             isClaimed: false,
-            claimedAt: 0
+            claimedAt: 0,
+            targetReceiver: targetReceiver
         });
 
-        emit WarheadCreated(warheadId, _msgSender());
+        if (targetReceiver != address(0)) {
+            emit WarheadCreatedWithReceiver(warheadId, _msgSender(), targetReceiver);
+        } else {
+            emit WarheadCreated(warheadId, _msgSender());
+        }
     }
 
     function dropWarhead(uint256 warheadId, Coord memory coord, uint256 impactTime) external {
@@ -82,6 +98,10 @@ contract WarheadFactory is ERC2771Context, IERC721Receiver {
     function claim(Coord calldata location, uint256 warheadId) external checkWarhead(warheadId) {
         WarheadObject memory warhead = _warheads[warheadId];
         require(warhead.dropper != _msgSender(), "Cannot claim your own warhead");
+
+        if (warhead.targetReceiver != address(0)) {
+            require(warhead.targetReceiver == _msgSender(), "Cannot claim warhead for someone else");
+        }
 
         uint256 distance = _distance(warhead.target, location);
         require(distance <= 400, "Location is too far from target"); 

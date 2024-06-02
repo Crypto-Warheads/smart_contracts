@@ -29,7 +29,7 @@ describe("Warhead Factory", function () {
     });
 
     it("Should not create a warhead nft if the warhead factory is not the owner", async function () {
-        await expect(warheadFactory.createWarhead()).to.be.revertedWithCustomError(warheadNft, "OwnableUnauthorizedAccount");
+        await expect(warheadFactory.createWarhead(ethers.ZeroAddress)).to.be.revertedWithCustomError(warheadNft, "OwnableUnauthorizedAccount");
     });
 
     it("Should transfer the ownership of the warhead nft to the warhead factory", async function () {
@@ -38,7 +38,7 @@ describe("Warhead Factory", function () {
     });
 
     it("Should create a warhead nft", async function () {
-        await warheadFactory.createWarhead();
+        await warheadFactory.createWarhead(ethers.ZeroAddress);
         expect(await warheadNft.ownerOf(0)).to.equal(await warheadFactory.getAddress());
         const warhead = await warheadFactory.fetchWarheadInfo(0);
         expect(warhead.dropper).to.be.equal(accounts[0]);
